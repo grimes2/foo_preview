@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.5",
+	"1.6",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -29,6 +29,7 @@ double previewstart2;
 double totaltime2;
 double preview_position_end;
 bool menu_preview_enabled = false;
+bool random_enabled;
 
 // {90073616-61A0-473D-A172-703924FEB0A1}
 static const GUID guid_cfg_branch =
@@ -157,8 +158,8 @@ public:
 			{
 				if (cfg_percent_enabled && cfg_random_enabled)
 				{
-					cfg_random_enabled = false;
-					cfg_percent_enabled = true;
+					cfg_random_enabled == false;
+					cfg_percent_enabled == true;
 				}
 				preview_position_end = static_api_ptr_t<playback_control>()->playback_get_position();
 				if (preview_position_end < 2)
