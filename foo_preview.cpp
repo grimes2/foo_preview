@@ -2,13 +2,13 @@
 #define WINVER _WIN32_WINNT_WIN7
 
 #include <random>
-#include <helpers/foobar2000+atl.h>
+#include <foobar2000/SDK/foobar2000.h>
 
 static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.6",
+	"1.7",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
