@@ -7,3 +7,6 @@ Requirements:
 
 # Download Component
 * https://www.foobar2000.org/components/view/foo_preview
+
+# Download foobar2000
+* https://www.foobar2000.org/download
