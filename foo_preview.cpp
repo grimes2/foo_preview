@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.7",
+	"1.8",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -49,12 +49,12 @@ advconfig_string_factory cfg_previewstart("Start time (s)", guid_cfg_previewstar
 // {7C8B7E19-5BA9-4391-9299-20CCC620F4E7}
 static const GUID guid_cfg_percent_enabled =
 { 0x7c8b7e19, 0x5ba9, 0x4391, { 0x92, 0x99, 0x20, 0xcc, 0xc6, 0x20, 0xf4, 0xe7 } };
-advconfig_checkbox_factory cfg_percent_enabled("Start time in %", guid_cfg_percent_enabled, guid_cfg_branch, 0, "false");
+advconfig_checkbox_factory cfg_percent_enabled("Start time in %", guid_cfg_percent_enabled, guid_cfg_branch, 0, false);
 
 // {E0B5AA2A-189E-4F1C-B895-6720B22FA4EA}
 static const GUID guid_cfg_random_enabled =
 { 0xe0b5aa2a, 0x189e, 0x4f1c, { 0xb8, 0x95, 0x67, 0x20, 0xb2, 0x2f, 0xa4, 0xea } };
-advconfig_checkbox_factory cfg_random_enabled("Random start time", guid_cfg_random_enabled, guid_cfg_branch, 0, "false");
+advconfig_checkbox_factory cfg_random_enabled("Random start time", guid_cfg_random_enabled, guid_cfg_branch, 0, false);
 
 // {1D5D5C64-18E6-4FF5-B5DE-50CEDA4E975D}
 static const GUID guid_cfg_previewstartpercent =
@@ -62,10 +62,10 @@ static const GUID guid_cfg_previewstartpercent =
 advconfig_string_factory cfg_previewstartpercent("Start time (%)", guid_cfg_previewstartpercent, guid_cfg_branch, 0, "50");
 
 VOID CALLBACK PreviewTimer(
-	HWND hwnd,        // handle to window for timer messages
-	UINT message,     // WM_TIMER message
+	HWND,        // handle to window for timer messages
+	UINT,     // WM_TIMER message
 	UINT idEvent1,     // timer identifier
-	DWORD dwTime)     // current system time
+	DWORD)     // current system time
 {
 	if (menu_preview_enabled)
 	{
@@ -78,10 +78,10 @@ VOID CALLBACK PreviewTimer(
 }
 
 VOID CALLBACK PreviewTimer2(
-	HWND hwnd,        // handle to window for timer messages
-	UINT message,     // WM_TIMER message
+	HWND,        // handle to window for timer messages
+	UINT,     // WM_TIMER message
 	UINT idEvent2,     // timer identifier
-	DWORD dwTime)     // current system time
+	DWORD)     // current system time
 {
 	if (menu_preview_enabled)
 	{
@@ -156,11 +156,6 @@ public:
 			menu_preview_enabled = !menu_preview_enabled;
 			if (menu_preview_enabled)
 			{
-				if (cfg_percent_enabled && cfg_random_enabled)
-				{
-					cfg_random_enabled == false;
-					cfg_percent_enabled == true;
-				}
 				preview_position_end = static_api_ptr_t<playback_control>()->playback_get_position();
 				if (preview_position_end < 2)
 				{
@@ -168,7 +163,7 @@ public:
 					preview_position_end = atoi(previewtime);
 				}
 				static_api_ptr_t<playback_control>()->start(playback_control::track_command_play, false);
-				ptr3 = SetTimer(NULL, ID_TIMER3, preview_position_end * 1000, (TIMERPROC)PreviewTimer);
+				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_position_end * 1000, (TIMERPROC)PreviewTimer);
 				if (preview_position_end > 30)
 				{
 					FB2K_console_formatter() << "[Warning] Preview length: " << preview_position_end << "s";
@@ -199,7 +194,7 @@ public:
 	}
 	virtual t_uint32 get_sort_priority()
 	{
-		return sort_priority_dontcare;
+		return 0x80000000;
 	}
 	bool is_checked(t_uint32 p_index)
 	{
@@ -214,7 +209,7 @@ class play_callback_preview : public play_callback_static
 {
 public:
 	unsigned get_flags() { return flag_on_playback_stop | flag_on_playback_new_track; }
-	virtual void on_playback_seek(double p_time) {}
+	virtual void on_playback_seek(double) {}
 	virtual void on_playback_new_track(metadb_handle_ptr p_track)
 	{
 		if (menu_preview_enabled)
@@ -247,12 +242,12 @@ public:
 			menu_preview_enabled = false;
 		}
 	}
-	virtual void on_playback_pause(bool p_state) {}
-	virtual void on_playback_starting(play_control::t_track_command p_command, bool p_paused) {}
-	virtual void on_playback_edited(metadb_handle_ptr p_track) {}
-	virtual void on_playback_dynamic_info(const file_info& info) {}
-	virtual void on_playback_dynamic_info_track(const file_info& info) {}
-	virtual void on_playback_time(double p_time) {}
-	virtual void on_volume_change(float p_new_val) {}
+	virtual void on_playback_pause(bool) {}
+	virtual void on_playback_starting(play_control::t_track_command, bool) {}
+	virtual void on_playback_edited(metadb_handle_ptr) {}
+	virtual void on_playback_dynamic_info(const file_info&) {}
+	virtual void on_playback_dynamic_info_track(const file_info&) {}
+	virtual void on_playback_time(double) {}
+	virtual void on_volume_change(float) {}
 };
 static play_callback_static_factory_t<play_callback_preview> g_play_callback_preview;
