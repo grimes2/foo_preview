@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.11",
+	"1.12",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -31,6 +31,7 @@ double totaltime2;
 double preview_position_end;
 double preview_position_end_paused;
 double preview_position_paused;
+double previewtime2;
 bool menu_preview_enabled = false;
 bool random_enabled;
 int pause_remaining;
@@ -141,7 +142,7 @@ public:
 	virtual bool get_description(t_uint32 p_index, pfc::string_base& p_out)
 	{
 		if (p_index == 0)
-			p_out = "Toogle preview";
+			p_out = "Toggle preview";
 		else
 			return false;
 		return true;
@@ -224,6 +225,8 @@ public:
 	{
 		if (menu_preview_enabled)
 		{
+			cfg_preview.get(previewtime);
+			previewtime2 = atoi(previewtime);
 			cfg_bypass_track_length.get(bypass_track_length);
 			bypass_track_length2 = atoi(bypass_track_length);
 			KillTimer(NULL, ptr3);
@@ -251,7 +254,7 @@ public:
 					previewstart2 = atoi(previewstart);
 				}
 				ptr4 = SetTimer(NULL, ID_TIMER4, 0, (TIMERPROC)PreviewTimer2);
-				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_position_end * 1000, (TIMERPROC)PreviewTimer);
+				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)previewtime2 * 1000, (TIMERPROC)PreviewTimer);
 			}
 		}
 	}
