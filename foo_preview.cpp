@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.9",
+	"1.10",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -24,6 +24,7 @@ pfc::string8 previewtime;
 pfc::string8 totaltime;
 pfc::string8 previewstart;
 pfc::string8 previewstartpercent;
+pfc::string8 bypass_track_length;
 double previewstartpercent2;
 double previewstart2;
 double totaltime2;
@@ -33,6 +34,7 @@ double preview_position_paused;
 bool menu_preview_enabled = false;
 bool random_enabled;
 int pause_remaining;
+double bypass_track_length2;
 
 // {90073616-61A0-473D-A172-703924FEB0A1}
 static const GUID guid_cfg_branch =
@@ -63,6 +65,11 @@ advconfig_checkbox_factory cfg_random_enabled("Random start time", guid_cfg_rand
 static const GUID guid_cfg_previewstartpercent =
 { 0x1d5d5c64, 0x18e6, 0x4ff5, { 0xb5, 0xde, 0x50, 0xce, 0xda, 0x4e, 0x97, 0x5d } };
 advconfig_string_factory cfg_previewstartpercent("Start time (%)", guid_cfg_previewstartpercent, guid_cfg_branch, 0, "50");
+
+// {91876C5A-7200-4FCC-BAAE-1B77F1D48881}
+static const GUID guid_cfg_bypass_track_length =
+{ 0x91876c5a, 0x7200, 0x4fcc, { 0xba, 0xae, 0x1b, 0x77, 0xf1, 0xd4, 0x88, 0x81 } };
+advconfig_string_factory cfg_bypass_track_length("Bypass track length (s)", guid_cfg_bypass_track_length, guid_cfg_branch, 0, "5");
 
 VOID CALLBACK PreviewTimer(
 	HWND,        // handle to window for timer messages
@@ -155,22 +162,26 @@ public:
 			menu_preview_enabled = !menu_preview_enabled;
 			if (menu_preview_enabled)
 			{
-				preview_position_end = static_api_ptr_t<playback_control>()->playback_get_position();
+				if (static_api_ptr_t<playback_control>()->is_playing()) {
+					preview_position_end = static_api_ptr_t<playback_control>()->playback_get_position();
+				}
 				if (preview_position_end < 2)
 				{
 					cfg_preview.get(previewtime);
 					preview_position_end = atoi(previewtime);
 				}
+				if (bypass_track_length2 <= totaltime2) {
+					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_position_end * 1000, (TIMERPROC)PreviewTimer);
+					if (preview_position_end > 30)
+					{
+						FB2K_console_formatter() << "[Warning] Preview length: " << preview_position_end << "s";
+					}
+					else
+					{
+						FB2K_console_formatter() << "Preview length: " << preview_position_end << "s";
+					}
+				}
 				static_api_ptr_t<playback_control>()->start(playback_control::track_command_play, false);
-				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_position_end * 1000, (TIMERPROC)PreviewTimer);
-				if (preview_position_end > 30)
-				{
-					FB2K_console_formatter() << "[Warning] Preview length: " << preview_position_end << "s";
-				}
-				else
-				{
-					FB2K_console_formatter() << "Preview length: " << preview_position_end << "s";
-				}
 			}
 		}
 	}
@@ -213,31 +224,35 @@ public:
 	{
 		if (menu_preview_enabled)
 		{
+			cfg_previewstartpercent.get(bypass_track_length);
+			bypass_track_length2 = atoi(bypass_track_length);
 			KillTimer(NULL, ptr3);
 			titleformat_object::ptr titleformat;
 			titleformat_compiler::get()->compile_safe_ex(titleformat, "%length_seconds%", "<ERROR>");
 			p_track->format_title(nullptr, totaltime, titleformat, nullptr);
 			totaltime2 = atoi(totaltime);
-			if (cfg_percent_enabled)
-			{
-				cfg_previewstartpercent.get(previewstartpercent);
-				previewstartpercent2 = atoi(previewstartpercent);
-				previewstart2 = totaltime2 * previewstartpercent2 / 100;
+			if (bypass_track_length2 <= totaltime2) {
+				if (cfg_percent_enabled)
+				{
+					cfg_previewstartpercent.get(previewstartpercent);
+					previewstartpercent2 = atoi(previewstartpercent);
+					previewstart2 = totaltime2 * previewstartpercent2 / 100;
+				}
+				else if (cfg_random_enabled)
+				{
+					std::random_device rd; // obtain a random number from hardware
+					std::mt19937 gen(rd()); // seed the generator
+					std::uniform_int_distribution<> distr(0, (int)totaltime2 - (int)preview_position_end); // define the range
+					previewstart2 = distr(gen);
+				}
+				else
+				{
+					cfg_previewstart.get(previewstart);
+					previewstart2 = atoi(previewstart);
+				}
+				ptr4 = SetTimer(NULL, ID_TIMER4, 0, (TIMERPROC)PreviewTimer2);
+				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_position_end * 1000, (TIMERPROC)PreviewTimer);
 			}
-			else if (cfg_random_enabled)
-			{
-				std::random_device rd; // obtain a random number from hardware
-				std::mt19937 gen(rd()); // seed the generator
-				std::uniform_int_distribution<> distr(0, (int)totaltime2 - (int)preview_position_end); // define the range
-				previewstart2 = distr(gen);
-			}
-			else
-			{
-				cfg_previewstart.get(previewstart);
-				previewstart2 = atoi(previewstart);
-			}
-			ptr4 = SetTimer(NULL, ID_TIMER4, 0, (TIMERPROC)PreviewTimer2);
-			ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_position_end * 1000, (TIMERPROC)PreviewTimer);
 		}
 	}
 	virtual void on_playback_stop(play_control::t_stop_reason p_reason)
@@ -250,17 +265,20 @@ public:
 	}
 	virtual void on_playback_pause(bool paused) {
 		if (menu_preview_enabled) {
-			if (paused) {
-				cfg_preview.get(previewtime);
-				preview_position_paused = atoi(previewtime);
-				preview_position_end_paused = static_api_ptr_t<playback_control>()->playback_get_position();
-				pause_remaining = preview_position_paused + previewstart2 - (int)preview_position_end_paused;
-				if (pause_remaining < 0 || pause_remaining > preview_position_paused) pause_remaining = 0;
-				KillTimer(NULL, ptr3);
-			}
-			else {
-				KillTimer(NULL, ptr3);
-				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)pause_remaining * 1000, (TIMERPROC)PreviewTimer);
+			if (bypass_track_length2 <= totaltime2) {
+
+				if (paused) {
+					cfg_preview.get(previewtime);
+					preview_position_paused = atoi(previewtime);
+					preview_position_end_paused = static_api_ptr_t<playback_control>()->playback_get_position();
+					pause_remaining = (int)(preview_position_paused + previewstart2 - preview_position_end_paused);
+					if (pause_remaining < 0 || pause_remaining > preview_position_paused) pause_remaining = 0;
+					KillTimer(NULL, ptr3);
+				}
+				else {
+					KillTimer(NULL, ptr3);
+					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)pause_remaining * 1000, (TIMERPROC)PreviewTimer);
+				}
 			}
 		}
 	}
