@@ -250,7 +250,7 @@ public:
 	}
 	virtual void on_playback_pause(bool paused) {
 		if (menu_preview_enabled) {
-			if (static_api_ptr_t<playback_control>()->is_paused()) {
+			if (paused) {
 				cfg_preview.get(previewtime);
 				preview_position_paused = atoi(previewtime);
 				preview_position_end_paused = static_api_ptr_t<playback_control>()->playback_get_position();
