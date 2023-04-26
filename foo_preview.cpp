@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.8",
+	"1.9",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -28,8 +28,11 @@ double previewstartpercent2;
 double previewstart2;
 double totaltime2;
 double preview_position_end;
+double preview_position_end2;
+double preview_position;
 bool menu_preview_enabled = false;
 bool random_enabled;
+int pause_remaining;
 
 // {90073616-61A0-473D-A172-703924FEB0A1}
 static const GUID guid_cfg_branch =
@@ -69,6 +72,7 @@ VOID CALLBACK PreviewTimer(
 {
 	if (menu_preview_enabled)
 	{
+		KillTimer(NULL, idEvent1);
 		static_api_ptr_t<playback_control>()->start(playback_control::track_command_next, false);
 	}
 	else
@@ -85,11 +89,6 @@ VOID CALLBACK PreviewTimer2(
 {
 	if (menu_preview_enabled)
 	{
-		if (!cfg_percent_enabled && !cfg_random_enabled)
-		{
-			cfg_previewstart.get(previewstart);
-			previewstart2 = atoi(previewstart);
-		}
 		static_api_ptr_t<playback_control>()->playback_seek(previewstart2);
 		KillTimer(NULL, idEvent2);
 	}
@@ -208,12 +207,13 @@ static mainmenu_commands_factory_t<mainmenu_commands_preview> g_mainmenu_command
 class play_callback_preview : public play_callback_static
 {
 public:
-	unsigned get_flags() { return flag_on_playback_stop | flag_on_playback_new_track; }
+	unsigned get_flags() { return flag_on_playback_stop | flag_on_playback_pause | flag_on_playback_new_track; }
 	virtual void on_playback_seek(double) {}
 	virtual void on_playback_new_track(metadb_handle_ptr p_track)
 	{
 		if (menu_preview_enabled)
 		{
+			KillTimer(NULL, ptr3);
 			titleformat_object::ptr titleformat;
 			titleformat_compiler::get()->compile_safe_ex(titleformat, "%length_seconds%", "<ERROR>");
 			p_track->format_title(nullptr, totaltime, titleformat, nullptr);
@@ -231,7 +231,13 @@ public:
 				std::uniform_int_distribution<> distr(0, (int)totaltime2 - (int)preview_position_end); // define the range
 				previewstart2 = distr(gen);
 			}
+			else
+			{
+				cfg_previewstart.get(previewstart);
+				previewstart2 = atoi(previewstart);
+			}
 			ptr4 = SetTimer(NULL, ID_TIMER4, 0, (TIMERPROC)PreviewTimer2);
+			ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_position_end * 1000, (TIMERPROC)PreviewTimer);
 		}
 	}
 	virtual void on_playback_stop(play_control::t_stop_reason p_reason)
@@ -242,7 +248,22 @@ public:
 			menu_preview_enabled = false;
 		}
 	}
-	virtual void on_playback_pause(bool) {}
+	virtual void on_playback_pause(bool paused) {
+		if (menu_preview_enabled) {
+			if (static_api_ptr_t<playback_control>()->is_paused()) {
+				cfg_preview.get(previewtime);
+				preview_position = atoi(previewtime);
+				preview_position_end2 = static_api_ptr_t<playback_control>()->playback_get_position();
+				pause_remaining = preview_position + previewstart2 - (int)preview_position_end2;
+				if (pause_remaining < 0 || pause_remaining > preview_position) pause_remaining = 0;
+				KillTimer(NULL, ptr3);
+			}
+			else {
+				KillTimer(NULL, ptr3);
+				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)pause_remaining * 1000, (TIMERPROC)PreviewTimer);
+			}
+		}
+	}
 	virtual void on_playback_starting(play_control::t_track_command, bool) {}
 	virtual void on_playback_edited(metadb_handle_ptr) {}
 	virtual void on_playback_dynamic_info(const file_info&) {}
