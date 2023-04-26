@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.10",
+	"1.11",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -170,7 +170,7 @@ public:
 					cfg_preview.get(previewtime);
 					preview_position_end = atoi(previewtime);
 				}
-				if (bypass_track_length2 <= totaltime2) {
+				if (bypass_track_length2 < totaltime2) {
 					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_position_end * 1000, (TIMERPROC)PreviewTimer);
 					if (preview_position_end > 30)
 					{
@@ -224,14 +224,14 @@ public:
 	{
 		if (menu_preview_enabled)
 		{
-			cfg_previewstartpercent.get(bypass_track_length);
+			cfg_bypass_track_length.get(bypass_track_length);
 			bypass_track_length2 = atoi(bypass_track_length);
 			KillTimer(NULL, ptr3);
 			titleformat_object::ptr titleformat;
 			titleformat_compiler::get()->compile_safe_ex(titleformat, "%length_seconds%", "<ERROR>");
 			p_track->format_title(nullptr, totaltime, titleformat, nullptr);
 			totaltime2 = atoi(totaltime);
-			if (bypass_track_length2 <= totaltime2) {
+			if (bypass_track_length2 < totaltime2) {
 				if (cfg_percent_enabled)
 				{
 					cfg_previewstartpercent.get(previewstartpercent);
@@ -266,7 +266,7 @@ public:
 	}
 	virtual void on_playback_pause(bool paused) {
 		if (menu_preview_enabled) {
-			if (bypass_track_length2 <= totaltime2) {
+			if (bypass_track_length2 < totaltime2) {
 
 				if (paused) {
 					cfg_preview.get(previewtime);
