@@ -260,6 +260,7 @@ public:
 		if (p_reason == 0)
 		{
 			KillTimer(NULL, ptr3);
+			KillTimer(NULL, ptr4);
 			menu_preview_enabled = false;
 		}
 	}
