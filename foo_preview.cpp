@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.12",
+	"1.13",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -245,8 +245,9 @@ public:
 				{
 					std::random_device rd; // obtain a random number from hardware
 					std::mt19937 gen(rd()); // seed the generator
-					std::uniform_int_distribution<> distr(0, (int)totaltime2 - (int)preview_position_end); // define the range
+					std::uniform_int_distribution<> distr(0, (int)totaltime2 - (int)previewtime2); // define the range
 					previewstart2 = distr(gen);
+					FB2K_console_formatter() << "Random start: " << previewstart2 << "s";
 				}
 				else
 				{
