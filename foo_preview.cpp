@@ -28,8 +28,8 @@ double previewstartpercent2;
 double previewstart2;
 double totaltime2;
 double preview_position_end;
-double preview_position_end2;
-double preview_position;
+double preview_position_end_paused;
+double preview_position_paused;
 bool menu_preview_enabled = false;
 bool random_enabled;
 int pause_remaining;
@@ -252,10 +252,10 @@ public:
 		if (menu_preview_enabled) {
 			if (static_api_ptr_t<playback_control>()->is_paused()) {
 				cfg_preview.get(previewtime);
-				preview_position = atoi(previewtime);
-				preview_position_end2 = static_api_ptr_t<playback_control>()->playback_get_position();
-				pause_remaining = preview_position + previewstart2 - (int)preview_position_end2;
-				if (pause_remaining < 0 || pause_remaining > preview_position) pause_remaining = 0;
+				preview_position_paused = atoi(previewtime);
+				preview_position_end_paused = static_api_ptr_t<playback_control>()->playback_get_position();
+				pause_remaining = preview_position_paused + previewstart2 - (int)preview_position_end_paused;
+				if (pause_remaining < 0 || pause_remaining > preview_position_paused) pause_remaining = 0;
 				KillTimer(NULL, ptr3);
 			}
 			else {
