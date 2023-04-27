@@ -35,7 +35,6 @@ double pause_remaining2;
 double preview_time2;
 bool menu_preview_enabled = false;
 bool random_enabled;
-double bypass_track_length2;
 
 // {90073616-61A0-473D-A172-703924FEB0A1}
 static const GUID guid_cfg_branch =
