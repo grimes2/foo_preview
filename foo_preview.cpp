@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.13",
+	"1.14",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -20,21 +20,21 @@ VALIDATE_COMPONENT_FILENAME("foo_preview.dll");
 
 UINT_PTR ptr3 = 0;
 UINT_PTR ptr4 = 0;
-pfc::string8 previewtime;
+pfc::string8 preview_time;
 pfc::string8 totaltime;
-pfc::string8 previewstart;
-pfc::string8 previewstartpercent;
+pfc::string8 preview_start;
+pfc::string8 preview_start_percent;
 pfc::string8 bypass_track_length;
-double previewstartpercent2;
-double previewstart2;
+double preview_start_percent2;
+double preview_start2;
 double totaltime2;
-double preview_position_end;
-double preview_position_end_paused;
-double preview_position_paused;
-double previewtime2;
+double pause_time;
+double pause_preview_time;
+double pause_remaining;
+double pause_remaining2;
+double preview_time2;
 bool menu_preview_enabled = false;
 bool random_enabled;
-int pause_remaining;
 double bypass_track_length2;
 
 // {90073616-61A0-473D-A172-703924FEB0A1}
@@ -97,7 +97,7 @@ VOID CALLBACK PreviewTimer2(
 {
 	if (menu_preview_enabled)
 	{
-		static_api_ptr_t<playback_control>()->playback_seek(previewstart2);
+		static_api_ptr_t<playback_control>()->playback_seek(preview_start2);
 		KillTimer(NULL, idEvent2);
 	}
 	else
@@ -163,24 +163,15 @@ public:
 			menu_preview_enabled = !menu_preview_enabled;
 			if (menu_preview_enabled)
 			{
-				if (static_api_ptr_t<playback_control>()->is_playing()) {
-					preview_position_end = static_api_ptr_t<playback_control>()->playback_get_position();
-				}
-				if (preview_position_end < 2)
+				cfg_preview.get(preview_time);
+				preview_time2 = atoi(preview_time);
+				if (preview_time2 > 30)
 				{
-					cfg_preview.get(previewtime);
-					preview_position_end = atoi(previewtime);
+					FB2K_console_formatter() << "[Warning] Preview length: " << preview_time2 << "s";
 				}
-				if (bypass_track_length2 < totaltime2) {
-					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_position_end * 1000, (TIMERPROC)PreviewTimer);
-					if (preview_position_end > 30)
-					{
-						FB2K_console_formatter() << "[Warning] Preview length: " << preview_position_end << "s";
-					}
-					else
-					{
-						FB2K_console_formatter() << "Preview length: " << preview_position_end << "s";
-					}
+				else
+				{
+					FB2K_console_formatter() << "Preview length: " << preview_time2 << "s";
 				}
 				static_api_ptr_t<playback_control>()->start(playback_control::track_command_play, false);
 			}
@@ -225,8 +216,8 @@ public:
 	{
 		if (menu_preview_enabled)
 		{
-			cfg_preview.get(previewtime);
-			previewtime2 = atoi(previewtime);
+			cfg_preview.get(preview_time);
+			preview_time2 = atoi(preview_time);
 			cfg_bypass_track_length.get(bypass_track_length);
 			bypass_track_length2 = atoi(bypass_track_length);
 			KillTimer(NULL, ptr3);
@@ -237,25 +228,25 @@ public:
 			if (bypass_track_length2 < totaltime2) {
 				if (cfg_percent_enabled)
 				{
-					cfg_previewstartpercent.get(previewstartpercent);
-					previewstartpercent2 = atoi(previewstartpercent);
-					previewstart2 = totaltime2 * previewstartpercent2 / 100;
+					cfg_previewstartpercent.get(preview_start_percent);
+					preview_start_percent2 = atoi(preview_start_percent);
+					preview_start2 = totaltime2 * preview_start_percent2 / 100;
 				}
 				else if (cfg_random_enabled)
 				{
 					std::random_device rd; // obtain a random number from hardware
 					std::mt19937 gen(rd()); // seed the generator
-					std::uniform_int_distribution<> distr(0, (int)totaltime2 - (int)previewtime2); // define the range
-					previewstart2 = distr(gen);
-					FB2K_console_formatter() << "Random start: " << previewstart2 << "s";
+					std::uniform_int_distribution<> distr(0, (int)totaltime2 - (int)preview_time2); // define the range
+					preview_start2 = distr(gen);
+					FB2K_console_formatter() << "Random start: " << preview_start2 << "s";
 				}
 				else
 				{
-					cfg_previewstart.get(previewstart);
-					previewstart2 = atoi(previewstart);
+					cfg_previewstart.get(preview_start);
+					preview_start2 = atoi(preview_start);
 				}
 				ptr4 = SetTimer(NULL, ID_TIMER4, 0, (TIMERPROC)PreviewTimer2);
-				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)previewtime2 * 1000, (TIMERPROC)PreviewTimer);
+				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_time2 * 1000, (TIMERPROC)PreviewTimer);
 			}
 		}
 	}
@@ -273,16 +264,16 @@ public:
 			if (bypass_track_length2 < totaltime2) {
 
 				if (paused) {
-					cfg_preview.get(previewtime);
-					preview_position_paused = atoi(previewtime);
-					preview_position_end_paused = static_api_ptr_t<playback_control>()->playback_get_position();
-					pause_remaining = (int)(preview_position_paused + previewstart2 - preview_position_end_paused);
-					if (pause_remaining < 0 || pause_remaining > preview_position_paused) pause_remaining = 0;
+					cfg_preview.get(preview_time);
+					pause_preview_time = atoi(preview_time);
+					pause_time = static_api_ptr_t<playback_control>()->playback_get_position();
+					pause_remaining = pause_preview_time + preview_start2 - pause_time;
+					pause_remaining2 = pause_remaining * 1000;
 					KillTimer(NULL, ptr3);
 				}
 				else {
 					KillTimer(NULL, ptr3);
-					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)pause_remaining * 1000, (TIMERPROC)PreviewTimer);
+					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)pause_remaining2, (TIMERPROC)PreviewTimer);
 				}
 			}
 		}
