@@ -24,16 +24,16 @@ pfc::string8 preview_time;
 pfc::string8 total_time;
 pfc::string8 preview_start;
 pfc::string8 preview_start_percent;
-pfc::string8 bypass_track_length;
+pfc::string8 track_length_bypass;
 double preview_start_percent2;
 double preview_start2;
 double total_time2;
-double pause_time;
-double pause_preview_time;
-double pause_remaining;
-double pause_remaining2;
+double time_pause;
+double preview_time_pause;
+double remaining_pause;
+double remaining_pause2;
 double preview_time2;
-double bypass_track_length2;
+double track_length_bypass2;
 bool menu_preview_enabled = false;
 bool random_enabled;
 
@@ -68,9 +68,9 @@ static const GUID guid_cfg_previewstartpercent =
 advconfig_string_factory cfg_previewstartpercent("Start time (%)", guid_cfg_previewstartpercent, guid_cfg_branch, 0, "50");
 
 // {91876C5A-7200-4FCC-BAAE-1B77F1D48881}
-static const GUID guid_cfg_bypass_track_length =
+static const GUID guid_cfg_track_length_bypass =
 { 0x91876c5a, 0x7200, 0x4fcc, { 0xba, 0xae, 0x1b, 0x77, 0xf1, 0xd4, 0x88, 0x81 } };
-advconfig_string_factory cfg_bypass_track_length("Bypass track length (s)", guid_cfg_bypass_track_length, guid_cfg_branch, 0, "5");
+advconfig_string_factory cfg_track_length_bypass("Track length bypass (s)", guid_cfg_track_length_bypass, guid_cfg_branch, 0, "5");
 
 VOID CALLBACK PreviewTimer(
 	HWND,        // handle to window for timer messages
@@ -218,14 +218,14 @@ public:
 		{
 			cfg_preview.get(preview_time);
 			preview_time2 = atoi(preview_time);
-			cfg_bypass_track_length.get(bypass_track_length);
-			bypass_track_length2 = atoi(bypass_track_length);
+			cfg_track_length_bypass.get(track_length_bypass);
+			track_length_bypass2 = atoi(track_length_bypass);
 			KillTimer(NULL, ptr3);
 			titleformat_object::ptr titleformat;
 			titleformat_compiler::get()->compile_safe_ex(titleformat, "%length_seconds%", "<ERROR>");
 			p_track->format_title(nullptr, total_time, titleformat, nullptr);
 			total_time2 = atoi(total_time);
-			if (bypass_track_length2 < total_time2) {
+			if (track_length_bypass2 < total_time2) {
 				if (cfg_percent_enabled)
 				{
 					cfg_previewstartpercent.get(preview_start_percent);
@@ -264,19 +264,19 @@ public:
 	}
 	virtual void on_playback_pause(bool paused) {
 		if (menu_preview_enabled) {
-			if (bypass_track_length2 < total_time2) {
+			if (track_length_bypass2 < total_time2) {
 
 				if (paused) {
 					cfg_preview.get(preview_time);
-					pause_preview_time = atoi(preview_time);
-					pause_time = static_api_ptr_t<playback_control>()->playback_get_position();
-					pause_remaining = pause_preview_time + preview_start2 - pause_time;
-					pause_remaining2 = pause_remaining * 1000;
+					preview_time_pause = atoi(preview_time);
+					time_pause = static_api_ptr_t<playback_control>()->playback_get_position();
+					remaining_pause = preview_time_pause + preview_start2 - time_pause;
+					remaining_pause2 = remaining_pause * 1000;
 					KillTimer(NULL, ptr3);
 				}
 				else {
 					KillTimer(NULL, ptr3);
-					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)pause_remaining2, (TIMERPROC)PreviewTimer);
+					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)remaining_pause2, (TIMERPROC)PreviewTimer);
 				}
 			}
 		}
