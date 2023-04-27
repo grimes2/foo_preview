@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.14",
+	"1.15",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -33,6 +33,7 @@ double pause_preview_time;
 double pause_remaining;
 double pause_remaining2;
 double preview_time2;
+double bypass_track_length2;
 bool menu_preview_enabled = false;
 bool random_enabled;
 
