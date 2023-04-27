@@ -244,6 +244,9 @@ public:
 				{
 					cfg_previewstart.get(preview_start);
 					preview_start2 = atoi(preview_start);
+					if (preview_start2 > total_time2 - preview_time2) {
+						preview_start2 = total_time2 - preview_time2;
+					}
 				}
 				ptr4 = SetTimer(NULL, ID_TIMER4, 0, (TIMERPROC)PreviewTimer2);
 				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_time2 * 1000, (TIMERPROC)PreviewTimer);
