@@ -21,13 +21,13 @@ VALIDATE_COMPONENT_FILENAME("foo_preview.dll");
 UINT_PTR ptr3 = 0;
 UINT_PTR ptr4 = 0;
 pfc::string8 preview_time;
-pfc::string8 totaltime;
+pfc::string8 total_time;
 pfc::string8 preview_start;
 pfc::string8 preview_start_percent;
 pfc::string8 bypass_track_length;
 double preview_start_percent2;
 double preview_start2;
-double totaltime2;
+double total_time2;
 double pause_time;
 double pause_preview_time;
 double pause_remaining;
@@ -223,20 +223,20 @@ public:
 			KillTimer(NULL, ptr3);
 			titleformat_object::ptr titleformat;
 			titleformat_compiler::get()->compile_safe_ex(titleformat, "%length_seconds%", "<ERROR>");
-			p_track->format_title(nullptr, totaltime, titleformat, nullptr);
-			totaltime2 = atoi(totaltime);
-			if (bypass_track_length2 < totaltime2) {
+			p_track->format_title(nullptr, total_time, titleformat, nullptr);
+			total_time2 = atoi(total_time);
+			if (bypass_track_length2 < total_time2) {
 				if (cfg_percent_enabled)
 				{
 					cfg_previewstartpercent.get(preview_start_percent);
 					preview_start_percent2 = atoi(preview_start_percent);
-					preview_start2 = totaltime2 * preview_start_percent2 / 100;
+					preview_start2 = total_time2 * preview_start_percent2 / 100;
 				}
 				else if (cfg_random_enabled)
 				{
 					std::random_device rd; // obtain a random number from hardware
 					std::mt19937 gen(rd()); // seed the generator
-					std::uniform_int_distribution<> distr(0, (int)totaltime2 - (int)preview_time2); // define the range
+					std::uniform_int_distribution<> distr(0, (int)total_time2 - (int)preview_time2); // define the range
 					preview_start2 = distr(gen);
 					FB2K_console_formatter() << "Random start: " << preview_start2 << "s";
 				}
@@ -261,7 +261,7 @@ public:
 	}
 	virtual void on_playback_pause(bool paused) {
 		if (menu_preview_enabled) {
-			if (bypass_track_length2 < totaltime2) {
+			if (bypass_track_length2 < total_time2) {
 
 				if (paused) {
 					cfg_preview.get(preview_time);
