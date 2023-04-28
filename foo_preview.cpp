@@ -71,7 +71,7 @@ advconfig_string_factory cfg_start_time_percent("Start time (%)", guid_cfg_start
 // {91876C5A-7200-4FCC-BAAE-1B77F1D48881}
 static const GUID guid_cfg_track_length_bypass =
 { 0x91876c5a, 0x7200, 0x4fcc, { 0xba, 0xae, 0x1b, 0x77, 0xf1, 0xd4, 0x88, 0x81 } };
-advconfig_string_factory cfg_track_length_bypass("Track length bypass (s)", guid_cfg_track_length_bypass, guid_cfg_branch, 0, "5");
+advconfig_string_factory cfg_track_length_bypass("Track length bypass (s)", guid_cfg_track_length_bypass, guid_cfg_branch, 0, "0");
 
 // {713B159B-E2D4-4D5C-96C0-7B172C32E22B}
 static const GUID guid_cfg_preview_length_percent_enabled =
@@ -234,9 +234,9 @@ public:
 	{
 		if (menu_preview_enabled)
 		{
+			KillTimer(NULL, ptr3);
 			cfg_track_length_bypass.get(track_length_bypass);
 			track_length_bypass2 = atoi(track_length_bypass);
-			KillTimer(NULL, ptr3);
 			titleformat_object::ptr titleformat;
 			titleformat_compiler::get()->compile_safe_ex(titleformat, "%length_seconds%", "<ERROR>");
 			p_track->format_title(nullptr, total_time, titleformat, nullptr);
