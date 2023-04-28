@@ -32,7 +32,6 @@ double total_length2;
 double time_pause;
 double preview_length_pause;
 double remaining_length_pause;
-double remaining_length_pause2;
 double preview_length2;
 double preview_length_percent2;
 double track_length_bypass2;
@@ -300,16 +299,13 @@ public:
 			if (track_length_bypass2 < total_length2) {
 
 				if (paused) {
-					cfg_preview_length.get(preview_length);
-					preview_length_pause = atoi(preview_length);
 					time_pause = static_api_ptr_t<playback_control>()->playback_get_position();
-					remaining_length_pause = preview_length_pause + preview_start2 - time_pause;
-					remaining_length_pause2 = remaining_length_pause * 1000;
+					remaining_length_pause = (preview_length2 + preview_start2 - time_pause) * 1000;
 					KillTimer(NULL, ptr3);
 				}
 				else {
 					KillTimer(NULL, ptr3);
-					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)remaining_length_pause2, (TIMERPROC)PreviewTimer);
+					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)remaining_length_pause, (TIMERPROC)PreviewTimer);
 				}
 			}
 		}
