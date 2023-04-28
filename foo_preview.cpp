@@ -84,6 +84,11 @@ static const GUID guid_cfg_preview_length_percent =
 { 0xc48abaac, 0xef39, 0x43a7, { 0xb3, 0x4e, 0x88, 0xa7, 0xbd, 0xb6, 0xf5, 0x79 } };
 advconfig_string_factory cfg_preview_length_percent("Preview length (%)", guid_cfg_preview_length_percent, guid_cfg_branch, 0, "5");
 
+// {1787F975-F3DF-410E-AAB1-954D8F7A2C41}
+static const GUID guid_cfg_loop_enabled =
+{ 0x1787f975, 0xf3df, 0x410e, { 0xaa, 0xb1, 0x95, 0x4d, 0x8f, 0x7a, 0x2c, 0x41 } };
+advconfig_checkbox_factory cfg_loop_enabled("Loop", guid_cfg_loop_enabled, guid_cfg_branch, 0, false);
+
 VOID CALLBACK PreviewTimer(
 	HWND,        // handle to window for timer messages
 	UINT,     // WM_TIMER message
@@ -93,7 +98,13 @@ VOID CALLBACK PreviewTimer(
 	if (menu_preview_enabled)
 	{
 		KillTimer(NULL, idEvent1);
-		static_api_ptr_t<playback_control>()->start(playback_control::track_command_next, false);
+		if (cfg_loop_enabled)
+		{
+			static_api_ptr_t<playback_control>()->start(playback_control::track_command_play, false);
+		}
+		else {
+			static_api_ptr_t<playback_control>()->start(playback_control::track_command_next, false);
+		}
 	}
 	else
 	{
