@@ -228,7 +228,7 @@ class play_callback_preview : public play_callback_static
 {
 public:
 	unsigned get_flags() { return flag_on_playback_stop | flag_on_playback_pause | flag_on_playback_new_track; }
-	virtual void on_playback_seek(double) {}
+
 	virtual void on_playback_new_track(metadb_handle_ptr p_track)
 	{
 		if (menu_preview_enabled)
@@ -310,6 +310,7 @@ public:
 			}
 		}
 	}
+	virtual void on_playback_seek(double) {}
 	virtual void on_playback_starting(play_control::t_track_command, bool) {}
 	virtual void on_playback_edited(metadb_handle_ptr) {}
 	virtual void on_playback_dynamic_info(const file_info&) {}
