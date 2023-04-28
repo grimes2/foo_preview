@@ -21,6 +21,7 @@ VALIDATE_COMPONENT_FILENAME("foo_preview.dll");
 UINT_PTR ptr3 = 0;
 UINT_PTR ptr4 = 0;
 pfc::string8 preview_time;
+pfc::string8 preview_time_percent;
 pfc::string8 total_time;
 pfc::string8 preview_start;
 pfc::string8 preview_start_percent;
@@ -33,6 +34,7 @@ double preview_time_pause;
 double remaining_pause;
 double remaining_pause2;
 double preview_time2;
+double preview_time_percent2;
 double track_length_bypass2;
 bool menu_preview_enabled = false;
 bool random_enabled;
@@ -43,19 +45,19 @@ static const GUID guid_cfg_branch =
 static advconfig_branch_factory cfg_branch("Preview", guid_cfg_branch, advconfig_entry::guid_branch_playback, 0);
 
 // {43009833-D765-4515-9C59-7EED782B622B}
-static const GUID guid_cfg_preview =
+static const GUID guid_cfg_preview_length =
 { 0x43009833, 0xd765, 0x4515, { 0x9c, 0x59, 0x7e, 0xed, 0x78, 0x2b, 0x62, 0x2b } };
-advconfig_string_factory cfg_preview("Preview length (s)", guid_cfg_preview, guid_cfg_branch, 0, "5");
+advconfig_string_factory cfg_preview_length("Preview length (s)", guid_cfg_preview_length, guid_cfg_branch, 0, "5");
 
 // {547E2382-09CB-4EC3-B325-C0FFBFF3BDA6}
-static const GUID guid_cfg_previewstart =
+static const GUID guid_cfg_start_time_seconds =
 { 0x547e2382, 0x9cb, 0x4ec3, { 0xb3, 0x25, 0xc0, 0xff, 0xbf, 0xf3, 0xbd, 0xa6 } };
-advconfig_string_factory cfg_previewstart("Start time (s)", guid_cfg_previewstart, guid_cfg_branch, 0, "0");
+advconfig_string_factory cfg_start_time_seconds("Start time (s)", guid_cfg_start_time_seconds, guid_cfg_branch, 0, "0");
 
 // {7C8B7E19-5BA9-4391-9299-20CCC620F4E7}
-static const GUID guid_cfg_percent_enabled =
+static const GUID guid_cfg_start_time_percent_enabled =
 { 0x7c8b7e19, 0x5ba9, 0x4391, { 0x92, 0x99, 0x20, 0xcc, 0xc6, 0x20, 0xf4, 0xe7 } };
-advconfig_checkbox_factory cfg_percent_enabled("Start time in %", guid_cfg_percent_enabled, guid_cfg_branch, 0, false);
+advconfig_checkbox_factory cfg_start_time_percent_enabled("Start time in %", guid_cfg_start_time_percent_enabled, guid_cfg_branch, 0, false);
 
 // {E0B5AA2A-189E-4F1C-B895-6720B22FA4EA}
 static const GUID guid_cfg_random_enabled =
@@ -63,14 +65,24 @@ static const GUID guid_cfg_random_enabled =
 advconfig_checkbox_factory cfg_random_enabled("Random start time", guid_cfg_random_enabled, guid_cfg_branch, 0, false);
 
 // {1D5D5C64-18E6-4FF5-B5DE-50CEDA4E975D}
-static const GUID guid_cfg_previewstartpercent =
+static const GUID guid_cfg_start_time_percent =
 { 0x1d5d5c64, 0x18e6, 0x4ff5, { 0xb5, 0xde, 0x50, 0xce, 0xda, 0x4e, 0x97, 0x5d } };
-advconfig_string_factory cfg_previewstartpercent("Start time (%)", guid_cfg_previewstartpercent, guid_cfg_branch, 0, "50");
+advconfig_string_factory cfg_start_time_percent("Start time (%)", guid_cfg_start_time_percent, guid_cfg_branch, 0, "50");
 
 // {91876C5A-7200-4FCC-BAAE-1B77F1D48881}
 static const GUID guid_cfg_track_length_bypass =
 { 0x91876c5a, 0x7200, 0x4fcc, { 0xba, 0xae, 0x1b, 0x77, 0xf1, 0xd4, 0x88, 0x81 } };
 advconfig_string_factory cfg_track_length_bypass("Track length bypass (s)", guid_cfg_track_length_bypass, guid_cfg_branch, 0, "5");
+
+// {713B159B-E2D4-4D5C-96C0-7B172C32E22B}
+static const GUID guid_cfg_preview_length_percent_enabled =
+{ 0x713b159b, 0xe2d4, 0x4d5c, { 0x96, 0xc0, 0x7b, 0x17, 0x2c, 0x32, 0xe2, 0x2b } };
+advconfig_checkbox_factory cfg_preview_length_percent_enabled("Preview length in %", guid_cfg_preview_length_percent_enabled, guid_cfg_branch, 0, false);
+
+// {C48ABAAC-EF39-43A7-B34E-88A7BDB6F579}
+static const GUID guid_cfg_preview_length_percent =
+{ 0xc48abaac, 0xef39, 0x43a7, { 0xb3, 0x4e, 0x88, 0xa7, 0xbd, 0xb6, 0xf5, 0x79 } };
+advconfig_string_factory cfg_preview_length_percent("Preview length (%)", guid_cfg_preview_length_percent, guid_cfg_branch, 0, "5");
 
 VOID CALLBACK PreviewTimer(
 	HWND,        // handle to window for timer messages
@@ -163,16 +175,9 @@ public:
 			menu_preview_enabled = !menu_preview_enabled;
 			if (menu_preview_enabled)
 			{
-				cfg_preview.get(preview_time);
+				cfg_preview_length.get(preview_time);
 				preview_time2 = atoi(preview_time);
-				if (preview_time2 > 30)
-				{
-					FB2K_console_formatter() << "[Warning] Preview length: " << preview_time2 << "s";
-				}
-				else
-				{
-					FB2K_console_formatter() << "Preview length: " << preview_time2 << "s";
-				}
+				FB2K_console_formatter() << "Preview enabled";
 				static_api_ptr_t<playback_control>()->start(playback_control::track_command_play, false);
 			}
 		}
@@ -216,8 +221,6 @@ public:
 	{
 		if (menu_preview_enabled)
 		{
-			cfg_preview.get(preview_time);
-			preview_time2 = atoi(preview_time);
 			cfg_track_length_bypass.get(track_length_bypass);
 			track_length_bypass2 = atoi(track_length_bypass);
 			KillTimer(NULL, ptr3);
@@ -226,9 +229,18 @@ public:
 			p_track->format_title(nullptr, total_time, titleformat, nullptr);
 			total_time2 = atoi(total_time);
 			if (track_length_bypass2 < total_time2) {
-				if (cfg_percent_enabled)
+				if (cfg_preview_length_percent_enabled) {
+					cfg_preview_length_percent.get(preview_time_percent);
+					preview_time_percent2 = atoi(preview_time_percent);
+					preview_time2 = total_time2 * preview_time_percent2 / 100;
+				}
+				else {
+					cfg_preview_length.get(preview_time);
+					preview_time2 = atoi(preview_time);
+				}
+				if (cfg_start_time_percent_enabled)
 				{
-					cfg_previewstartpercent.get(preview_start_percent);
+					cfg_start_time_percent.get(preview_start_percent);
 					preview_start_percent2 = atoi(preview_start_percent);
 					preview_start2 = total_time2 * preview_start_percent2 / 100;
 				}
@@ -242,11 +254,19 @@ public:
 				}
 				else
 				{
-					cfg_previewstart.get(preview_start);
+					cfg_start_time_seconds.get(preview_start);
 					preview_start2 = atoi(preview_start);
-					if (preview_start2 > total_time2 - preview_time2) {
-						preview_start2 = total_time2 - preview_time2;
-					}
+				}
+				if (preview_start2 > total_time2 - preview_time2) {
+					preview_start2 = total_time2 - preview_time2;
+				}
+				if (preview_time2 > 30)
+				{
+					FB2K_console_formatter() << "[Warning] Preview length: " << preview_time2 << "s";
+				}
+				else
+				{
+					FB2K_console_formatter() << "Preview length: " << preview_time2 << "s";
 				}
 				ptr4 = SetTimer(NULL, ID_TIMER4, 0, (TIMERPROC)PreviewTimer2);
 				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_time2 * 1000, (TIMERPROC)PreviewTimer);
@@ -267,7 +287,7 @@ public:
 			if (track_length_bypass2 < total_time2) {
 
 				if (paused) {
-					cfg_preview.get(preview_time);
+					cfg_preview_length.get(preview_time);
 					preview_time_pause = atoi(preview_time);
 					time_pause = static_api_ptr_t<playback_control>()->playback_get_position();
 					remaining_pause = preview_time_pause + preview_start2 - time_pause;
