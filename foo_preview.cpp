@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.15",
+	"1.16",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
