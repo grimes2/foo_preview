@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.16",
+	"1.17",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -62,7 +62,7 @@ advconfig_checkbox_factory cfg_start_time_percent_enabled("Start time in %", gui
 // {E0B5AA2A-189E-4F1C-B895-6720B22FA4EA}
 static const GUID guid_cfg_random_enabled =
 { 0xe0b5aa2a, 0x189e, 0x4f1c, { 0xb8, 0x95, 0x67, 0x20, 0xb2, 0x2f, 0xa4, 0xea } };
-advconfig_checkbox_factory cfg_random_enabled("Random start time", guid_cfg_random_enabled, guid_cfg_branch, 0, false);
+advconfig_checkbox_factory cfg_random_enabled("Start time random", guid_cfg_random_enabled, guid_cfg_branch, 0, false);
 
 // {1D5D5C64-18E6-4FF5-B5DE-50CEDA4E975D}
 static const GUID guid_cfg_start_time_percent =
@@ -188,8 +188,11 @@ public:
 			{
 				cfg_preview_length.get(preview_time);
 				preview_time2 = atoi(preview_time);
-				FB2K_console_formatter() << "Preview enabled";
+				FB2K_console_formatter() << "Preview on";
 				static_api_ptr_t<playback_control>()->start(playback_control::track_command_play, false);
+			}
+			else {
+				FB2K_console_formatter() << "Preview off";
 			}
 		}
 	}
