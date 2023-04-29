@@ -30,9 +30,8 @@ pfc::string8 preview_length_limit;
 double preview_start_percent2;
 double preview_start2;
 double total_length2;
-double time_pause;
-double preview_length_pause;
-double remaining_length_pause;
+double position_paused;
+double preview_length_remaining_paused;
 double preview_length2;
 double preview_length_percent2;
 double track_length_bypass2;
@@ -305,21 +304,22 @@ public:
 	virtual void on_playback_pause(bool paused) {
 		if (menu_preview_enabled) {
 			if (track_length_bypass2 < total_length2) {
-
 				if (paused) {
-					time_pause = static_api_ptr_t<playback_control>()->playback_get_position();
-					remaining_length_pause = (preview_length2 + preview_start2 - time_pause) * 1000;
+					position_paused = static_api_ptr_t<playback_control>()->playback_get_position();
+					preview_length_remaining_paused = preview_start2 + preview_length2 - position_paused;
 					KillTimer(NULL, ptr3);
 				}
 				else {
 					KillTimer(NULL, ptr3);
-					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)remaining_length_pause, (TIMERPROC)PreviewTimer);
+					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)(preview_length_remaining_paused * 1000), (TIMERPROC)PreviewTimer);
 				}
 			}
 		}
 	}
 	virtual void on_playback_seek(double p_time) {
-		preview_start2 = p_time;
+		if (menu_preview_enabled) {
+			preview_start2 = p_time;
+		}
 	}
 	virtual void on_playback_starting(play_control::t_track_command, bool) {}
 	virtual void on_playback_edited(metadb_handle_ptr) {}
