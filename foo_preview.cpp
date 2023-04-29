@@ -192,6 +192,8 @@ public:
 			{
 				cfg_preview_length.get(preview_length);
 				preview_length2 = atoi(preview_length);
+				cfg_start_time_seconds.get(preview_start);
+				preview_start2 = atoi(preview_start);
 				FB2K_console_formatter() << "Preview on";
 				static_api_ptr_t<playback_control>()->start(playback_control::track_command_play, false);
 			}
@@ -279,11 +281,6 @@ public:
 					preview_start2 = distr(gen);
 					FB2K_console_formatter() << "Random start: " << preview_start2 << "s";
 				}
-				else
-				{
-					cfg_start_time_seconds.get(preview_start);
-					preview_start2 = atoi(preview_start);
-				}
 				if (preview_start2 > total_length2 - preview_length2) {
 					preview_start2 = total_length2 - preview_length2;
 				}
@@ -319,6 +316,8 @@ public:
 	virtual void on_playback_seek(double p_time) {
 		if (menu_preview_enabled) {
 			preview_start2 = p_time;
+			KillTimer(NULL, ptr3);
+			ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_length2 * 1000, (TIMERPROC)PreviewTimer);
 		}
 	}
 	virtual void on_playback_starting(play_control::t_track_command, bool) {}
