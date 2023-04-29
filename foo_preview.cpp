@@ -26,6 +26,7 @@ pfc::string8 total_length;
 pfc::string8 preview_start;
 pfc::string8 preview_start_percent;
 pfc::string8 track_length_bypass;
+pfc::string8 preview_length_limit;
 double preview_start_percent2;
 double preview_start2;
 double total_length2;
@@ -35,6 +36,7 @@ double remaining_length_pause;
 double preview_length2;
 double preview_length_percent2;
 double track_length_bypass2;
+double preview_length_limit2;
 bool menu_preview_enabled = false;
 
 // {90073616-61A0-473D-A172-703924FEB0A1}
@@ -86,6 +88,11 @@ advconfig_string_factory cfg_preview_length_percent("Preview length (%)", guid_c
 static const GUID guid_cfg_loop_enabled =
 { 0x1787f975, 0xf3df, 0x410e, { 0xaa, 0xb1, 0x95, 0x4d, 0x8f, 0x7a, 0x2c, 0x41 } };
 advconfig_checkbox_factory cfg_loop_enabled("Loop", guid_cfg_loop_enabled, guid_cfg_branch, 0, false);
+
+// {585C9B33-36A6-4FBC-98D6-11326A2B4982}
+static const GUID guid_cfg_preview_length_limit =
+{ 0x585c9b33, 0x36a6, 0x4fbc, { 0x98, 0xd6, 0x11, 0x32, 0x6a, 0x2b, 0x49, 0x82 } };
+advconfig_string_factory cfg_preview_length_limit("Preview length limit (s)", guid_cfg_preview_length_limit, guid_cfg_branch, 0, "30");
 
 VOID CALLBACK PreviewTimer(
 	HWND,        // handle to window for timer messages
@@ -249,6 +256,11 @@ public:
 				else {
 					cfg_preview_length.get(preview_length);
 					preview_length2 = atoi(preview_length);
+				}
+				cfg_preview_length_limit.get(preview_length_limit);
+				preview_length_limit2 = atoi(preview_length_limit);
+				if (preview_length2 > preview_length_limit2) {
+					preview_length2 = preview_length_limit2;
 				}
 				if (cfg_start_time_percent_enabled)
 				{
