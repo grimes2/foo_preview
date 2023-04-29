@@ -234,7 +234,7 @@ static mainmenu_commands_factory_t<mainmenu_commands_preview> g_mainmenu_command
 class play_callback_preview : public play_callback_static
 {
 public:
-	unsigned get_flags() { return flag_on_playback_stop | flag_on_playback_pause | flag_on_playback_new_track; }
+	unsigned get_flags() { return flag_on_playback_stop | flag_on_playback_pause | flag_on_playback_seek | flag_on_playback_new_track; }
 
 	virtual void on_playback_new_track(metadb_handle_ptr p_track)
 	{
@@ -261,6 +261,10 @@ public:
 				preview_length_limit2 = atoi(preview_length_limit);
 				if (preview_length2 > preview_length_limit2) {
 					preview_length2 = preview_length_limit2;
+					FB2K_console_formatter() << "Preview length: " << preview_length2 << "s (limited)";
+				}
+				else {
+					FB2K_console_formatter() << "Preview length: " << preview_length2 << "s";
 				}
 				if (cfg_start_time_percent_enabled)
 				{
@@ -283,14 +287,6 @@ public:
 				}
 				if (preview_start2 > total_length2 - preview_length2) {
 					preview_start2 = total_length2 - preview_length2;
-				}
-				if (preview_length2 > 30)
-				{
-					FB2K_console_formatter() << "[Warning] Preview length: " << preview_length2 << "s";
-				}
-				else
-				{
-					FB2K_console_formatter() << "Preview length: " << preview_length2 << "s";
 				}
 				ptr4 = SetTimer(NULL, ID_TIMER4, 0, (TIMERPROC)PreviewTimer2);
 				ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_length2 * 1000, (TIMERPROC)PreviewTimer);
@@ -322,7 +318,9 @@ public:
 			}
 		}
 	}
-	virtual void on_playback_seek(double) {}
+	virtual void on_playback_seek(double p_time) {
+		preview_start2 = p_time;
+	}
 	virtual void on_playback_starting(play_control::t_track_command, bool) {}
 	virtual void on_playback_edited(metadb_handle_ptr) {}
 	virtual void on_playback_dynamic_info(const file_info&) {}
