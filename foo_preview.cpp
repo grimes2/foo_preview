@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.21",
+	"1.22",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -25,6 +25,7 @@ pfc::string8 preview_length_percent;
 pfc::string8 total_length;
 pfc::string8 preview_start;
 pfc::string8 preview_start_percent;
+pfc::string8 total_length_percent;
 pfc::string8 track_length_bypass;
 pfc::string8 preview_length_limit;
 double preview_start_percent2;
@@ -34,6 +35,8 @@ double position_paused;
 double preview_length_remaining_paused;
 double preview_length2;
 double preview_length_percent2;
+double total_length_percent2;
+double total_length_percent3;
 double track_length_bypass2;
 double preview_length_limit2;
 bool menu_preview_enabled = false;
@@ -59,9 +62,9 @@ static const GUID guid_cfg_start_time_percent_enabled =
 advconfig_checkbox_factory cfg_start_time_percent_enabled("Start time in %", guid_cfg_start_time_percent_enabled, guid_cfg_branch, 0, false);
 
 // {E0B5AA2A-189E-4F1C-B895-6720B22FA4EA}
-static const GUID guid_cfg_random_enabled =
+static const GUID guid_cfg_preview_start_random_enabled =
 { 0xe0b5aa2a, 0x189e, 0x4f1c, { 0xb8, 0x95, 0x67, 0x20, 0xb2, 0x2f, 0xa4, 0xea } };
-advconfig_checkbox_factory cfg_random_enabled("Start time random", guid_cfg_random_enabled, guid_cfg_branch, 0, false);
+advconfig_checkbox_factory cfg_preview_start_random_enabled("Start time random", guid_cfg_preview_start_random_enabled, guid_cfg_branch, 0, false);
 
 // {1D5D5C64-18E6-4FF5-B5DE-50CEDA4E975D}
 static const GUID guid_cfg_start_time_percent =
@@ -82,6 +85,16 @@ advconfig_checkbox_factory cfg_preview_length_percent_enabled("Preview length in
 static const GUID guid_cfg_preview_length_percent =
 { 0xc48abaac, 0xef39, 0x43a7, { 0xb3, 0x4e, 0x88, 0xa7, 0xbd, 0xb6, 0xf5, 0x79 } };
 advconfig_string_factory cfg_preview_length_percent("Preview length (%)", guid_cfg_preview_length_percent, guid_cfg_branch, 0, "5");
+
+// {A875DA0F-BE63-453F-A5F5-9E507A68D61F}
+static const GUID guid_cfg_total_length_percent_enabled =
+{ 0xa875da0f, 0xbe63, 0x453f, { 0xa5, 0xf5, 0x9e, 0x50, 0x7a, 0x68, 0xd6, 0x1f } };
+advconfig_checkbox_factory cfg_total_length_percent_enabled("Total length in %", guid_cfg_total_length_percent_enabled, guid_cfg_branch, 0, false);
+
+// {A86FD538-7B93-43B9-991D-2F5FDACC3A1A}
+static const GUID guid_cfg_total_length_percent =
+{ 0xa86fd538, 0x7b93, 0x43b9, { 0x99, 0x1d, 0x2f, 0x5f, 0xda, 0xcc, 0x3a, 0x1a } };
+advconfig_string_factory cfg_total_length_percent("Total length (%)", guid_cfg_total_length_percent, guid_cfg_branch, 0, "50");
 
 // {1787F975-F3DF-410E-AAB1-954D8F7A2C41}
 static const GUID guid_cfg_loop_enabled =
@@ -254,6 +267,20 @@ public:
 			p_track->format_title(nullptr, total_length, titleformat, nullptr);
 			total_length2 = atoi(total_length);
 			if (track_length_bypass2 < total_length2) {
+				if (cfg_start_time_percent_enabled)
+				{
+					cfg_start_time_percent.get(preview_start_percent);
+					preview_start_percent2 = atoi(preview_start_percent);
+					preview_start2 = total_length2 * preview_start_percent2 / 100;
+				}
+				else if (cfg_preview_start_random_enabled)
+				{
+					std::random_device rd; // obtain a random number from hardware
+					std::mt19937 gen(rd()); // seed the generator
+					std::uniform_int_distribution<> distr(0, (int)total_length2 - (int)preview_length2); // define the range
+					preview_start2 = distr(gen);
+					FB2K_console_formatter() << "Random start: " << preview_start2 << "s";
+				}
 				cfg_preview_length_limit.get(preview_length_limit);
 				preview_length_limit2 = atoi(preview_length_limit);
 				if (cfg_preview_length_percent_enabled) {
@@ -267,6 +294,21 @@ public:
 					std::uniform_int_distribution<> distr(4, (int)preview_length_limit2); // define the range
 					preview_length2 = distr(gen);
 				}
+				if (cfg_total_length_percent_enabled)
+				{
+					cfg_total_length_percent.get(total_length_percent);
+					total_length_percent2 = atoi(total_length_percent);
+					total_length_percent3 = total_length2 * total_length_percent2 / 100;
+					if (total_length_percent3 > preview_start2) {
+						preview_length2 = (total_length_percent3 - preview_start2);
+					}
+					else {
+						cfg_preview_length.get(preview_length);
+						preview_length2 = atoi(preview_length);
+					}
+					FB2K_console_formatter() << "Preview start: " << preview_start2 << "s";
+					FB2K_console_formatter() << "Total length percent: " << total_length_percent3 << "s";
+				}
 				else {
 					cfg_preview_length.get(preview_length);
 					preview_length2 = atoi(preview_length);
@@ -277,20 +319,6 @@ public:
 				}
 				else {
 					FB2K_console_formatter() << "Preview length: " << preview_length2 << "s";
-				}
-				if (cfg_start_time_percent_enabled)
-				{
-					cfg_start_time_percent.get(preview_start_percent);
-					preview_start_percent2 = atoi(preview_start_percent);
-					preview_start2 = total_length2 * preview_start_percent2 / 100;
-				}
-				else if (cfg_random_enabled)
-				{
-					std::random_device rd; // obtain a random number from hardware
-					std::mt19937 gen(rd()); // seed the generator
-					std::uniform_int_distribution<> distr(0, (int)total_length2 - (int)preview_length2); // define the range
-					preview_start2 = distr(gen);
-					FB2K_console_formatter() << "Random start: " << preview_start2 << "s";
 				}
 				if (preview_start2 > total_length2 - preview_length2) {
 					preview_start2 = total_length2 - preview_length2;
