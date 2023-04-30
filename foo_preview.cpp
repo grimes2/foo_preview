@@ -54,22 +54,22 @@ advconfig_string_factory cfg_preview_length("Preview length (s)", guid_cfg_previ
 // {547E2382-09CB-4EC3-B325-C0FFBFF3BDA6}
 static const GUID guid_cfg_start_time_seconds =
 { 0x547e2382, 0x9cb, 0x4ec3, { 0xb3, 0x25, 0xc0, 0xff, 0xbf, 0xf3, 0xbd, 0xa6 } };
-advconfig_string_factory cfg_start_time_seconds("Start time (s)", guid_cfg_start_time_seconds, guid_cfg_branch, 0, "0");
+advconfig_string_factory cfg_start_time_seconds("Preview start (s)", guid_cfg_start_time_seconds, guid_cfg_branch, 0, "0");
 
 // {7C8B7E19-5BA9-4391-9299-20CCC620F4E7}
 static const GUID guid_cfg_start_time_percent_enabled =
 { 0x7c8b7e19, 0x5ba9, 0x4391, { 0x92, 0x99, 0x20, 0xcc, 0xc6, 0x20, 0xf4, 0xe7 } };
-advconfig_checkbox_factory cfg_start_time_percent_enabled("Start time in %", guid_cfg_start_time_percent_enabled, guid_cfg_branch, 0, false);
+advconfig_checkbox_factory cfg_start_time_percent_enabled("Preview start in %", guid_cfg_start_time_percent_enabled, guid_cfg_branch, 0, false);
 
 // {E0B5AA2A-189E-4F1C-B895-6720B22FA4EA}
 static const GUID guid_cfg_preview_start_random_enabled =
 { 0xe0b5aa2a, 0x189e, 0x4f1c, { 0xb8, 0x95, 0x67, 0x20, 0xb2, 0x2f, 0xa4, 0xea } };
-advconfig_checkbox_factory cfg_preview_start_random_enabled("Start time random", guid_cfg_preview_start_random_enabled, guid_cfg_branch, 0, false);
+advconfig_checkbox_factory cfg_preview_start_random_enabled("Preview start random", guid_cfg_preview_start_random_enabled, guid_cfg_branch, 0, false);
 
 // {1D5D5C64-18E6-4FF5-B5DE-50CEDA4E975D}
 static const GUID guid_cfg_start_time_percent =
 { 0x1d5d5c64, 0x18e6, 0x4ff5, { 0xb5, 0xde, 0x50, 0xce, 0xda, 0x4e, 0x97, 0x5d } };
-advconfig_string_factory cfg_start_time_percent("Start time (%)", guid_cfg_start_time_percent, guid_cfg_branch, 0, "50");
+advconfig_string_factory cfg_start_time_percent("Preview start (%)", guid_cfg_start_time_percent, guid_cfg_branch, 0, "50");
 
 // {91876C5A-7200-4FCC-BAAE-1B77F1D48881}
 static const GUID guid_cfg_track_length_bypass =
