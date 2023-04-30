@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.20",
+	"1.21",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -92,6 +92,11 @@ advconfig_checkbox_factory cfg_loop_enabled("Loop", guid_cfg_loop_enabled, guid_
 static const GUID guid_cfg_preview_length_limit =
 { 0x585c9b33, 0x36a6, 0x4fbc, { 0x98, 0xd6, 0x11, 0x32, 0x6a, 0x2b, 0x49, 0x82 } };
 advconfig_string_factory cfg_preview_length_limit("Preview length limit (s)", guid_cfg_preview_length_limit, guid_cfg_branch, 0, "30");
+
+// {834875C8-C519-4468-8E51-32E5787560B6}
+static const GUID guid_cfg_preview_length_random_enabled =
+{ 0x834875c8, 0xc519, 0x4468, { 0x8e, 0x51, 0x32, 0xe5, 0x78, 0x75, 0x60, 0xb6 } };
+advconfig_checkbox_factory cfg_preview_length_random_enabled("Preview length random", guid_cfg_preview_length_random_enabled, guid_cfg_branch, 0, false);
 
 VOID CALLBACK PreviewTimer(
 	HWND,        // handle to window for timer messages
@@ -249,17 +254,23 @@ public:
 			p_track->format_title(nullptr, total_length, titleformat, nullptr);
 			total_length2 = atoi(total_length);
 			if (track_length_bypass2 < total_length2) {
+				cfg_preview_length_limit.get(preview_length_limit);
+				preview_length_limit2 = atoi(preview_length_limit);
 				if (cfg_preview_length_percent_enabled) {
 					cfg_preview_length_percent.get(preview_length_percent);
 					preview_length_percent2 = atoi(preview_length_percent);
 					preview_length2 = total_length2 * preview_length_percent2 / 100;
 				}
+				else if (cfg_preview_length_random_enabled) {
+					std::random_device rd; // obtain a random number from hardware
+					std::mt19937 gen(rd()); // seed the generator
+					std::uniform_int_distribution<> distr(4, (int)preview_length_limit2); // define the range
+					preview_length2 = distr(gen);
+				}
 				else {
 					cfg_preview_length.get(preview_length);
 					preview_length2 = atoi(preview_length);
 				}
-				cfg_preview_length_limit.get(preview_length_limit);
-				preview_length_limit2 = atoi(preview_length_limit);
 				if (preview_length2 > preview_length_limit2) {
 					preview_length2 = preview_length_limit2;
 					FB2K_console_formatter() << "Preview length: " << preview_length2 << "s (limited)";
