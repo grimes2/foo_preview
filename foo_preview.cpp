@@ -306,8 +306,6 @@ public:
 						cfg_preview_length.get(preview_length);
 						preview_length2 = atoi(preview_length);
 					}
-					FB2K_console_formatter() << "Preview start: " << preview_start2 << "s";
-					FB2K_console_formatter() << "Total length percent: " << total_length_percent3 << "s";
 				}
 				else {
 					cfg_preview_length.get(preview_length);
