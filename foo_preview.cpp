@@ -35,8 +35,8 @@ double position_paused;
 double preview_length_remaining_paused;
 double preview_length2;
 double preview_length_percent2;
-double total_length_percent2;
-double total_length_percent3;
+double preview_end_percent2;
+double preview_end_percent3;
 double track_length_bypass2;
 double preview_length_limit2;
 bool menu_preview_enabled = false;
@@ -89,12 +89,12 @@ advconfig_string_factory cfg_preview_length_percent("Preview length (%)", guid_c
 // {A875DA0F-BE63-453F-A5F5-9E507A68D61F}
 static const GUID guid_cfg_total_length_percent_enabled =
 { 0xa875da0f, 0xbe63, 0x453f, { 0xa5, 0xf5, 0x9e, 0x50, 0x7a, 0x68, 0xd6, 0x1f } };
-advconfig_checkbox_factory cfg_total_length_percent_enabled("Total length in %", guid_cfg_total_length_percent_enabled, guid_cfg_branch, 0, false);
+advconfig_checkbox_factory cfg_total_length_percent_enabled("Preview end in %", guid_cfg_total_length_percent_enabled, guid_cfg_branch, 0, false);
 
 // {A86FD538-7B93-43B9-991D-2F5FDACC3A1A}
 static const GUID guid_cfg_total_length_percent =
 { 0xa86fd538, 0x7b93, 0x43b9, { 0x99, 0x1d, 0x2f, 0x5f, 0xda, 0xcc, 0x3a, 0x1a } };
-advconfig_string_factory cfg_total_length_percent("Total length (%)", guid_cfg_total_length_percent, guid_cfg_branch, 0, "50");
+advconfig_string_factory cfg_total_length_percent("Preview end (%)", guid_cfg_total_length_percent, guid_cfg_branch, 0, "50");
 
 // {1787F975-F3DF-410E-AAB1-954D8F7A2C41}
 static const GUID guid_cfg_loop_enabled =
@@ -297,10 +297,10 @@ public:
 				if (cfg_total_length_percent_enabled)
 				{
 					cfg_total_length_percent.get(total_length_percent);
-					total_length_percent2 = atoi(total_length_percent);
-					total_length_percent3 = total_length2 * total_length_percent2 / 100;
-					if (total_length_percent3 > preview_start2) {
-						preview_length2 = (total_length_percent3 - preview_start2);
+					preview_end_percent2 = atoi(total_length_percent);
+					preview_end_percent3 = total_length2 * preview_end_percent2 / 100;
+					if (preview_end_percent3 > preview_start2) {
+						preview_length2 = (preview_end_percent3 - preview_start2);
 					}
 					else {
 						cfg_preview_length.get(preview_length);
