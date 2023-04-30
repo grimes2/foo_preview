@@ -346,7 +346,7 @@ public:
 				}
 				else {
 					KillTimer(NULL, ptr3);
-					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)(preview_length_remaining_paused * 1000), (TIMERPROC)PreviewTimer);
+					ptr3 = SetTimer(NULL, ID_TIMER3, (UINT)preview_length_remaining_paused * 1000, (TIMERPROC)PreviewTimer);
 				}
 			}
 		}
