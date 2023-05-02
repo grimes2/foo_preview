@@ -8,15 +8,15 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.22",
+	"1.23",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
 
 VALIDATE_COMPONENT_FILENAME("foo_preview.dll");
 
-#define ID_TIMER3 1012
-#define ID_TIMER4 1013
+constexpr auto ID_TIMER3 = 1012;
+constexpr auto ID_TIMER4 = 1013;
 
 UINT_PTR ptr3 = 0;
 UINT_PTR ptr4 = 0;
