@@ -8,7 +8,7 @@ static constexpr const char* component_name = "Preview";
 
 DECLARE_COMPONENT_VERSION(
 	component_name,
-	"1.23",
+	"1.24",
 	"grimes\n\n"
 	"Build: " __TIME__ ", " __DATE__
 );
@@ -303,10 +303,10 @@ public:
 					if (preview_end_percent3 > preview_start2) {
 						preview_length2 = (preview_end_percent3 - preview_start2);
 					}
-					else {
-						cfg_preview_length.get(preview_length);
-						preview_length2 = atoi(preview_length);
-					}
+				}
+				else {
+					cfg_preview_length.get(preview_length);
+					preview_length2 = atoi(preview_length);
 				}
 				if (preview_length2 > preview_length_limit2) {
 					preview_length2 = preview_length_limit2;
