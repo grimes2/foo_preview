@@ -295,7 +295,7 @@ public:
 					std::uniform_int_distribution<> distr(4, (int)preview_length_limit2); // define the range
 					preview_length2 = distr(gen);
 				}
-				if (cfg_total_length_percent_enabled)
+				else if (cfg_total_length_percent_enabled)
 				{
 					cfg_total_length_percent.get(total_length_percent);
 					preview_end_percent2 = atoi(total_length_percent);
@@ -307,10 +307,6 @@ public:
 						cfg_preview_length.get(preview_length);
 						preview_length2 = atoi(preview_length);
 					}
-				}
-				else {
-					cfg_preview_length.get(preview_length);
-					preview_length2 = atoi(preview_length);
 				}
 				if (preview_length2 > preview_length_limit2) {
 					preview_length2 = preview_length_limit2;
